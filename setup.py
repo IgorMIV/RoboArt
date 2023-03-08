@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(name='khirolib',
+setup(name='roboart',
         version='0.0.1',
         description='Library for robot painting',
         packages=find_packages(include=[
