@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='roboart',
-        version='0.0.1',
+        version='0.0.2',
         description='Library for robot painting',
         packages=find_packages(include=[
             'roboart',

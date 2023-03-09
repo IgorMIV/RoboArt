@@ -5,12 +5,86 @@ sheet_a4 = [(0, 0), (0, 297), (210, 297), (210, 0), (0, 0)]
 brush_diameter = 5
 safety_z = 100
 
-canvas_coordinate_system = (500, 500, 0, 0, 0, 0)
-paints_coordinate_system = (800, 500, 0, 0, 0, 0)
+safety_speed = 50
+drawing_speed = 20
+
+canvas_coordinate_system = (564, 14, -300, 0, 0, 0)
+paints_coordinate_system = (500, 14, -300, 0, 0, 0)
+
+home_position = (0, 0, safety_z)  # in canvas_coordinate_system
+
+# paints coordinate system
+water_pos = (10, 10, 50)
+water_pos_safe = (10, 10, safety_z)
+water_amplitude = 20
 
 delta_cs = ()
 for i in range(len(canvas_coordinate_system)):
     delta_cs += (canvas_coordinate_system[i] - paints_coordinate_system[i],)
+
+
+def dist_points(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
+def generate_pos_from_tuple(tpl, z=None):
+    tpl = list(tpl)
+    if z is not None:
+        if len(tpl) > 2:
+            print(tpl)
+            tpl[2] = z
+        if len(tpl) == 2:
+            tpl += (z,)
+
+    tmp_str = "TRANS("
+    for coord in tpl:
+        tmp_str += str(coord) + ", "
+    tmp_str = tmp_str[:-2] + ")"
+    return tmp_str
+
+
+preparation_text = "water_compensation = 0\n" \
+                   "canvas_compensation = 0\n" \
+                   "white_compensation = 0\n" \
+                   "green_compensation = 0\n" \
+                   "red_compensation = 0\n" \
+                   "blue_compensation = 0\n" \
+                   "black_compensation = 0\n" \
+                   "yellow_compensation = 0\n" \
+                   "POINT paints_base = " + generate_pos_from_tuple(paints_coordinate_system) + "\n" \
+                   "POINT canvas_base = " + generate_pos_from_tuple(canvas_coordinate_system)
+
+clean_brush_text = "BASE NULL\n" \
+                   "BASE paints_base\n" \
+                   "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
+                   "POINT cur_pos = HERE\n" \
+                   "POINT cur_pos_safe = TRANS(DX(cur_pos), DY(cur_pos), " + str(safety_z) + ")\n" \
+                   "LMOVE cur_pos_safe\n" \
+                   "POINT water_pos_safe = " + generate_pos_from_tuple(water_pos_safe) + "\n" \
+                   "LMOVE water_pos_safe\n" \
+                   "POINT water_pos = " + generate_pos_from_tuple(water_pos) + "\n" \
+                   "POINT water_pos_real = TRANS(DX(water_pos), DY(water_pos), DZ(water_pos) + water_compensation)\n" \
+                   "POINT water_pos_real_1 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+                                                  "DY(water_pos) + " + str(water_amplitude) + ", " \
+                                                  "DZ(water_pos) + water_compensation)\n" \
+                   "POINT water_pos_real_2 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+                                                  "DY(water_pos) - " + str(water_amplitude) + ", " \
+                                                  "DZ(water_pos) + water_compensation)\n" \
+                   "POINT water_pos_real_3 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
+                                                  "DY(water_pos) - " + str(water_amplitude) + ", " \
+                                                  "DZ(water_pos) + water_compensation)\n" \
+                   "POINT water_pos_real_4 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
+                                                  "DY(water_pos) + " + str(water_amplitude) + ", " \
+                                                  "DZ(water_pos) + water_compensation)\n" \
+                   "LMOVE water_pos_real\n" \
+                   "SPEED 60 mm/s ALWAYS\n" \
+                   "JMOVE water_pos_real_1\n" \
+                   "JMOVE water_pos_real_2\n" \
+                   "JMOVE water_pos_real_3\n" \
+                   "JMOVE water_pos_real_4\n" \
+                   "JMOVE water_pos_real\n" \
+                   "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
+                   "LMOVE water_pos_safe"
 
 
 class BrushColors:
@@ -25,6 +99,7 @@ class BrushColors:
 class OperationType:
     Line = 'Line'
     Point = 'Point'
+    CleanBrush = 'CleanBrush'
     ChangeColor = 'ChangeColor'
 
 
@@ -64,6 +139,9 @@ class DrawingOperation:
         if self._type == OperationType.Point:
             last_point = self.points
             return last_point
+        if self._type == OperationType.CleanBrush:
+            last_point = self.points
+            return last_point
 
     @property
     def type(self):
@@ -81,37 +159,39 @@ class RoboArt:
 
         self._current_brush_color = None
 
-    def draw_line(self, line, color):
+    def draw_line(self, line):
         self.get_previous_point
+        assert self._current_brush_color is not None, "You are not set brush color"
 
-        if self._current_brush_color is None:
-            self.take_paint(color)
-        assert self._current_brush_color == color, "You are not set or change brush color"
-
-        drawing_operation = DrawingOperation(color, OperationType.Line, data=line)
+        "You are not set or change brush color"
+        drawing_operation = DrawingOperation(self._current_brush_color, OperationType.Line, data=line)
         self._full_distance += drawing_operation.distance
         self._lines.append(drawing_operation)
 
-    def draw_point(self, point, color):
+    def draw_point(self, point):
         self.get_previous_point
 
-        if self._current_brush_color is None:
-            self.take_paint(color)
-        assert self._current_brush_color == color, "You are not set or change brush color"
+        assert self._current_brush_color is not None, "You are not set brush color"
 
-        drawing_operation = DrawingOperation(color, OperationType.Point, data=point)
+        drawing_operation = DrawingOperation(self._current_brush_color, OperationType.Point, data=point)
         self._full_distance += drawing_operation.distance
-        self._lines.append(drawing_operation)
-
-    def take_paint(self, color):
-        print(self.get_previous_point)
-        self._current_brush_color = color
-        drawing_operation = DrawingOperation(color, OperationType.ChangeColor)
-        # self._full_distance += drawing_operation.distance
         self._lines.append(drawing_operation)
 
     def clean_brush(self):
-        pass
+        drawing_operation = DrawingOperation(None, OperationType.CleanBrush)
+        self._lines.append(drawing_operation)
+        self._current_brush_color = None
+
+    def take_paint(self, color):
+        assert self._current_brush_color is None, "Your brush is not clear"
+
+        if self.get_previous_point is None:
+            self._full_distance += dist_points(home_position, delta_cs)
+
+        self._current_brush_color = color
+        drawing_operation = DrawingOperation(self._current_brush_color, OperationType.ChangeColor)
+        # self._full_distance += drawing_operation.distance
+        self._lines.append(drawing_operation)
 
     def visualize(self):
         fig = plt.figure()
@@ -131,7 +211,48 @@ class RoboArt:
         plt.show()
 
     def export_rcp(self):
-        pass
+        program_text = "BASE NULL\n" \
+                       "BASE canvas_base\n" \
+                       "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
+                       "POINT home_position = " + generate_pos_from_tuple(home_position) + "\n" + \
+                       "LMOVE home_position\n"
+
+        for element in self._lines:
+            if element.type == OperationType.Line:
+                program_text += "BASE NULL\n" \
+                       "BASE canvas_base\n" \
+                       "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
+                       "POINT cur_pos = HERE\n" \
+                       "POINT cur_pos_safe = TRANS(DX(cur_pos), DY(cur_pos), " + str(safety_z) + ")\n" \
+                       "LMOVE cur_pos_safe\n"
+
+                trajectory_points = element.points
+                program_text += "POINT start_up = " + generate_pos_from_tuple(trajectory_points[0], z=safety_z) + "\n" \
+                                "LMOVE start_up\n" \
+                                "POINT start_down = " + generate_pos_from_tuple(trajectory_points[0], z='canvas_compensation') + "\n" \
+                                "LMOVE start_down\n" \
+                                "SPEED " + str(drawing_speed) + " mm/s ALWAYS\n"
+
+                for point in trajectory_points[1:]:
+                    program_text += "POINT pnt = " + generate_pos_from_tuple(point, z='canvas_compensation') + "\n" \
+                                    "LMOVE pnt\n"
+
+            if element.type == OperationType.Point:
+                pass
+
+            if element.type == OperationType.CleanBrush:
+                program_text += "CALL cleanbrush\n"
+
+            if element.type == OperationType.ChangeColor:
+                pass
+
+        return program_text
+
+    def get_init_script():
+        return preparation_text
+
+    def get_cleanbrush_script():
+        return clean_brush_text
 
     @property
     def distance(self):
