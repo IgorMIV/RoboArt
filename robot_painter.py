@@ -1,5 +1,5 @@
 from roboart import *
-# from khirolib import *
+from khirolib import *
 
 roboart = RoboArt()
 
@@ -21,18 +21,19 @@ roboart.clean_brush()
 roboart.take_paint(BrushColors.black)
 roboart.draw_point((110, 130))
 roboart.draw_point((90, 95))
+#
+# print("Full distance:", roboart.distance)
+#
+# roboart.visualize()
 
-print("Full distance:", roboart.distance)
-
-roboart.visualize()
-
-# IP = "192.168.1.11"    # IP for K-Roset
-# PORT = 23         # Port for K-Roset
-# robot = khirolib(IP, PORT, connection_mode='single', log=True)
+IP = "192.168.1.11"    # IP for K-Roset
+PORT = 23         # Port for K-Roset
+robot = khirolib(IP, PORT, connection_mode='single', log=True)
 # robot.upload_program(program_name="init_prog", program_text=RoboArt.get_init_script())
-# robot.execute_rcp("init_prog")
+# robot.execute_rcp("init_prog", wait_complete=True)
 # robot.upload_program(program_name="cleanbrush", program_text=RoboArt.get_cleanbrush_script())
 
 # painting = roboart.export_rcp()
+# print(painting)
 # robot.upload_program(program_name="painting", program_text=painting)
-# robot.execute_rcp("painting")
+robot.execute_rcp("painting")

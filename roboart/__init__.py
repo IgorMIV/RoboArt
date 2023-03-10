@@ -8,8 +8,8 @@ safety_z = 100
 safety_speed = 50
 drawing_speed = 20
 
-canvas_coordinate_system = (564, 14, -300, 0, 0, 0)
-paints_coordinate_system = (500, 14, -300, 0, 0, 0)
+canvas_coordinate_system = (593, -65, -370, 0, 0, 0)
+paints_coordinate_system = (595, -107, -370, 0, 0, 0)
 
 home_position = (0, 0, safety_z)  # in canvas_coordinate_system
 
@@ -51,40 +51,44 @@ preparation_text = "water_compensation = 0\n" \
                    "blue_compensation = 0\n" \
                    "black_compensation = 0\n" \
                    "yellow_compensation = 0\n" \
+                   "POINT tool_test = TRANS(39, 3, 102, 4, 231, -1)\n" \
+                   "TOOL tool_test\n" \
                    "POINT paints_base = " + generate_pos_from_tuple(paints_coordinate_system) + "\n" \
                    "POINT canvas_base = " + generate_pos_from_tuple(canvas_coordinate_system)
 
-clean_brush_text = "BASE NULL\n" \
-                   "BASE paints_base\n" \
-                   "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
-                   "POINT cur_pos = HERE\n" \
-                   "POINT cur_pos_safe = TRANS(DX(cur_pos), DY(cur_pos), " + str(safety_z) + ")\n" \
-                   "LMOVE cur_pos_safe\n" \
-                   "POINT water_pos_safe = " + generate_pos_from_tuple(water_pos_safe) + "\n" \
-                   "LMOVE water_pos_safe\n" \
-                   "POINT water_pos = " + generate_pos_from_tuple(water_pos) + "\n" \
-                   "POINT water_pos_real = TRANS(DX(water_pos), DY(water_pos), DZ(water_pos) + water_compensation)\n" \
-                   "POINT water_pos_real_1 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
-                                                  "DY(water_pos) + " + str(water_amplitude) + ", " \
-                                                  "DZ(water_pos) + water_compensation)\n" \
-                   "POINT water_pos_real_2 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
-                                                  "DY(water_pos) - " + str(water_amplitude) + ", " \
-                                                  "DZ(water_pos) + water_compensation)\n" \
-                   "POINT water_pos_real_3 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
-                                                  "DY(water_pos) - " + str(water_amplitude) + ", " \
-                                                  "DZ(water_pos) + water_compensation)\n" \
-                   "POINT water_pos_real_4 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
-                                                  "DY(water_pos) + " + str(water_amplitude) + ", " \
-                                                  "DZ(water_pos) + water_compensation)\n" \
-                   "LMOVE water_pos_real\n" \
-                   "SPEED 60 mm/s ALWAYS\n" \
-                   "JMOVE water_pos_real_1\n" \
-                   "JMOVE water_pos_real_2\n" \
-                   "JMOVE water_pos_real_3\n" \
-                   "JMOVE water_pos_real_4\n" \
-                   "JMOVE water_pos_real\n" \
-                   "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
-                   "LMOVE water_pos_safe"
+clean_brush_text =\
+    "BASE NULL\n" \
+    "BASE paints_base\n" \
+    "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
+    "ACCURACY 1 ALWAYS\n" \
+    "POINT cur_pos = HERE\n" \
+    "POINT cur_pos_safe = TRANS(DX(cur_pos), DY(cur_pos), " + str(safety_z) + ")\n" \
+    "LMOVE cur_pos_safe\n" \
+    "POINT water_pos_safe = " + generate_pos_from_tuple(water_pos_safe) + "\n" \
+    "LMOVE water_pos_safe\n" \
+    "POINT water_pos = " + generate_pos_from_tuple(water_pos) + "\n" \
+    "POINT water_pos_r = TRANS(DX(water_pos), DY(water_pos), DZ(water_pos) + water_compensation)\n" \
+    "POINT water_pos_r_1 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+                                "DY(water_pos) + " + str(water_amplitude) + ", " \
+                                "DZ(water_pos) + water_compensation)\n" \
+    "POINT water_pos_r_2 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+                                "DY(water_pos) - " + str(water_amplitude) + ", " \
+                                "DZ(water_pos) + water_compensation)\n" \
+    "POINT water_pos_r_3 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
+                                "DY(water_pos) - " + str(water_amplitude) + ", " \
+                                "DZ(water_pos) + water_compensation)\n" \
+    "POINT water_pos_r_4 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
+                                "DY(water_pos) + " + str(water_amplitude) + ", " \
+                                "DZ(water_pos) + water_compensation)\n" \
+    "LMOVE water_pos_r\n" \
+    "SPEED 60 mm/s ALWAYS\n" \
+    "JMOVE water_pos_r_1\n" \
+    "JMOVE water_pos_r_2\n" \
+    "JMOVE water_pos_r_3\n" \
+    "JMOVE water_pos_r_4\n" \
+    "JMOVE water_pos_r\n" \
+    "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
+    "LMOVE water_pos_safe"
 
 
 class BrushColors:
