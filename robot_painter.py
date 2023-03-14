@@ -29,11 +29,13 @@ roboart.draw_point((90, 95))
 IP = "192.168.1.11"    # IP for K-Roset
 PORT = 23         # Port for K-Roset
 robot = khirolib(IP, PORT, connection_mode='single', log=True)
-# robot.upload_program(program_name="init_prog", program_text=RoboArt.get_init_script())
-# robot.execute_rcp("init_prog", wait_complete=True)
-# robot.upload_program(program_name="cleanbrush", program_text=RoboArt.get_cleanbrush_script())
+robot.upload_program(program_name="init_prog", program_text=RoboArt.get_init_script())
+robot.execute_rcp("init_prog", wait_complete=True)
+robot.upload_program(program_name="cleanbrush", program_text=RoboArt.get_cleanbrush_script())
+
+robot.execute_rcp("cleanbrush")
 
 # painting = roboart.export_rcp()
 # print(painting)
 # robot.upload_program(program_name="painting", program_text=painting)
-robot.execute_rcp("painting")
+# robot.execute_rcp("painting")

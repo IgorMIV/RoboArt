@@ -3,9 +3,9 @@ import math
 
 sheet_a4 = [(0, 0), (0, 297), (210, 297), (210, 0), (0, 0)]
 brush_diameter = 5
-safety_z = 100
+safety_z = 150
 
-safety_speed = 50
+safety_speed = 20
 drawing_speed = 20
 
 canvas_coordinate_system = (593, -65, -370, 0, 0, 0)
@@ -60,7 +60,7 @@ clean_brush_text =\
     "BASE NULL\n" \
     "BASE paints_base\n" \
     "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
-    "ACCURACY 1 ALWAYS\n" \
+    "ACCURACY 3 ALWAYS\n" \
     "POINT cur_pos = HERE\n" \
     "POINT cur_pos_safe = TRANS(DX(cur_pos), DY(cur_pos), " + str(safety_z) + ")\n" \
     "LMOVE cur_pos_safe\n" \
@@ -68,25 +68,39 @@ clean_brush_text =\
     "LMOVE water_pos_safe\n" \
     "POINT water_pos = " + generate_pos_from_tuple(water_pos) + "\n" \
     "POINT water_pos_r = TRANS(DX(water_pos), DY(water_pos), DZ(water_pos) + water_compensation)\n" \
-    "POINT water_pos_r_1 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+    "POINT water_pos_r_1 = TRANS(DX(water_pos), " \
                                 "DY(water_pos) + " + str(water_amplitude) + ", " \
-                                "DZ(water_pos) + water_compensation)\n" \
-    "POINT water_pos_r_2 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+                                "DZ(water_pos) + water_compensation," \
+                                "10,0,0)\n" \
+    "POINT water_pos_r_2 = TRANS(DX(water_pos), " \
                                 "DY(water_pos) - " + str(water_amplitude) + ", " \
-                                "DZ(water_pos) + water_compensation)\n" \
+                                "DZ(water_pos) + water_compensation," \
+                                "-10,0,0)\n" \
     "POINT water_pos_r_3 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
-                                "DY(water_pos) - " + str(water_amplitude) + ", " \
-                                "DZ(water_pos) + water_compensation)\n" \
-    "POINT water_pos_r_4 = TRANS(DX(water_pos) - " + str(water_amplitude) + ", " \
-                                "DY(water_pos) + " + str(water_amplitude) + ", " \
-                                "DZ(water_pos) + water_compensation)\n" \
+                                "DY(water_pos), " \
+                                "DZ(water_pos) + water_compensation," \
+                                "0,10,0)\n" \
+    "POINT water_pos_r_4 = TRANS(DX(water_pos) + " + str(water_amplitude) + ", " \
+                                "DY(water_pos), " \
+                                "DZ(water_pos) + water_compensation," \
+                                "0,-10,0)\n" \
+    "CP ON\n" \
     "LMOVE water_pos_r\n" \
-    "SPEED 60 mm/s ALWAYS\n" \
-    "JMOVE water_pos_r_1\n" \
-    "JMOVE water_pos_r_2\n" \
-    "JMOVE water_pos_r_3\n" \
-    "JMOVE water_pos_r_4\n" \
-    "JMOVE water_pos_r\n" \
+    "SPEED 160 mm/s ALWAYS\n" \
+    "LMOVE water_pos_r_1\n" \
+    "LMOVE water_pos_r_4\n" \
+    "LMOVE water_pos_r_2\n" \
+    "LMOVE water_pos_r_3\n" \
+    "LMOVE water_pos_r_1\n" \
+    "LMOVE water_pos_r_4\n" \
+    "LMOVE water_pos_r_2\n" \
+    "LMOVE water_pos_r_3\n" \
+    "LMOVE water_pos_r_1\n" \
+    "LMOVE water_pos_r_4\n" \
+    "LMOVE water_pos_r_2\n" \
+    "LMOVE water_pos_r_3\n" \
+    "LMOVE water_pos_r\n" \
+    "CP OFF\n" \
     "SPEED " + str(safety_speed) + " mm/s ALWAYS\n" \
     "LMOVE water_pos_safe"
 
@@ -210,7 +224,7 @@ class RoboArt:
 
             if drawing_object.type == OperationType.Point:
                 plt.scatter(drawing_object.x, drawing_object.y, color=drawing_object.color, s=brush_diameter*5)
-        
+
         ax.set_aspect('equal')
         plt.show()
 
