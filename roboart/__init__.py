@@ -260,6 +260,21 @@ class DrawingOperation:
         self._type = o_type
         self._distance = 0
 
+        sheet_a4 = [(0, 0), (0, 210), (297, 210), (297, 0), (0, 0)]
+
+        if self._type == OperationType.Line:
+            for point in self.points:
+                if (point[0] < sheet_a4[0][0]) or (point[0] > sheet_a4[2][0]):  # X
+                    assert False, "Point X-coordinate is out of range A4"
+                if (point[1] < sheet_a4[0][1]) or (point[1] > sheet_a4[2][1]):  # Y
+                    assert False, "Point Y-coordinate is out of range A4"
+
+        if self._type == OperationType.Point:
+            if (self.points[0] < sheet_a4[0][0]) or (self.points[0] > sheet_a4[2][0]):  # X
+                assert False, "Point X-coordinate is out of range A4"
+            if (self.points[1] < sheet_a4[0][1]) or (self.points[1] > sheet_a4[2][1]):  # Y
+                assert False, "Point Y-coordinate is out of range A4"
+
         if self._type == OperationType.Line:
             for i in range(len(self.points)-1):
                 self._distance += math.sqrt((self.points[i][0]-self.points[i+1][0]) ** 2 +
@@ -505,6 +520,17 @@ class RoboArt:
         return full_dist, self._paint_distance
 
     def paint(self):
+        full, paint = self.calculate_distance()
+        if full > 15000:
+            print("Maximum length is over 15000. Abort.")
+            return None
+
+        if self._lines[0].type != OperationType.CleanBrush:
+            print("Warning. Your first operation is not CleanBrush")
+
+        if self._lines[-1].type != OperationType.CleanBrush:
+            print("Warning. Your last operation is not CleanBrush")
+
         f = open("/home/available_users", "r")
         users_list = f.read().split('\n')
 
@@ -518,7 +544,7 @@ class RoboArt:
             robot.upload_program(program_name="painting", program_text=painting)
             robot.execute_rcp("painting")
         else:
-            print("Printing is not available now for your user")
+            print("Printing is not available for your user now!")
 
     def get_program_text(self):
         program_text = self.export_rcp()
